@@ -3,6 +3,8 @@ import cv2 as cv
 import numpy as np
 
 #test = cv.imread('C:\\Users\\Jeff C\\Downloads\\Code\\OpenCV files\\video processing attempt 2\\U.PNG')
+#note: if you call find on the same object more than once per loop, it starts to lower the confidence it returns. I have no idea why, it seems crazy, just don't do it. 
+
 
 class Vision:
 
@@ -11,7 +13,7 @@ class Vision:
     needle_w = 0
     needle_h = 0
     method = cv.TM_CCOEFF_NORMED
-    imread = cv.IMREAD_COLOR
+    imread = cv.IMREAD_GRAYSCALE
 
     # constructor
     def __init__(self, needle_img_path, method=method, imread=imread):
@@ -102,7 +104,8 @@ class Vision:
             #cv.waitKey()
             #cv.imwrite('result_click_point.jpg', haystack_img)
 
-        #maxLoc yeilds the best point
+        #maxLoc yeilds the best point 
+        #ONLY WORKS FOR GRAYSCALE IMAGES CORRECTLLY CONVERTED FROM BGR OR RGB
         minVal, maxVal, minLoc, maxLoc = cv.minMaxLoc(result)
         bestPointCenter = [maxLoc[0]+ int(self.needle_w/2), maxLoc[1] + int(self.needle_h/2)] 
         bestPointTopLeft = [maxLoc[0],maxLoc[1]]
@@ -118,6 +121,10 @@ class Vision:
 
         if return_mode == 'confidence':
             return [bestPointTopLeft,maxVal]
+
+        if return_mode == 'allPoints + bestPoint + confidence':
+            return points, bestPointTopLeft,maxVal
         
     def hitboxDims(self): #gives the size of the identified hitbox
         return [self.needle_w, self.needle_h]
+
