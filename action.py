@@ -180,6 +180,7 @@ class Action:
             pyautogui.keyDown('shift')
             time.sleep(abs(np.random.normal(.09,.03)))
             pyautogui.click()
+            time.sleep(wait)
             #if np.random.randint(1,7) == 7: 
             #    pyautogui.moveRel(np.random.randint(-5,6)) #I'm throwing this in here so that the mouse moves a little bit after clicking
             #time.sleep(np.random.normal(.1,.02))
