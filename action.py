@@ -100,7 +100,7 @@ class Action:
             locus3_y = np.random.randint(round((5.5*self.stdDev)),((self.hitboxHeight - round(5.5*self.stdDev))+1))
             self.locus3 = [locus3_x,locus3_y]
 
-    def click(self,hitboxScreenCoords,speed=.5, wait= np.random.uniform(.06,.10)):
+    def click(self,hitboxScreenCoords,speed=.5, wait= (.06 + abs(np.random.uniform(0,.02)))):
         self.hitboxScreenCoords = hitboxScreenCoords
 
         #pick a locus to generate a point int
@@ -180,13 +180,12 @@ class Action:
             pyautogui.keyDown('shift')
             time.sleep(abs(np.random.normal(.09,.03)))
             pyautogui.click()
-            time.sleep(wait)
             #if np.random.randint(1,7) == 7: 
             #    pyautogui.moveRel(np.random.randint(-5,6)) #I'm throwing this in here so that the mouse moves a little bit after clicking
             #time.sleep(np.random.normal(.1,.02))
             return self.screenClickPoint
 
-    def rightClick(self,hitboxScreenCoords,speed=.5, wait= np.random.uniform(.06,.10)):
+    def rightClick(self,hitboxScreenCoords,speed=.5, wait= (.06 + abs(np.random.uniform(0,.02)))):
         self.hitboxScreenCoords = hitboxScreenCoords
 
         #pick a locus to generate a point int
