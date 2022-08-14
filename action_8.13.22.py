@@ -75,6 +75,8 @@ class Action:
                 self.hitboxSmallestDimension = self.face_size[0]
             if self.face_size[0] > self.face_size[1]:
                 self.hitboxSmallestDimension = self.face_size[1]
+            else:
+                self.hitboxSmallestDimension = self.face_size[0]
 
         #determine the radius of the locus circles
         self.radius = (2/15)* self.hitboxSmallestDimension
