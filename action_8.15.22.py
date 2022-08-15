@@ -12,7 +12,7 @@ import cv2 as cv
 #it's done and tested mildly. I trust it enough to toss it into main
 
 def tick_dropper(odds=100):
-    if np.random.randint(0,odds) == 1:
+    if np.random.randint(0,odds) == 0:
         print('tick dropper! odds = 1 in %s' %odds)
         time.sleep(.6 + np.random.normal(0,.2))
     return
