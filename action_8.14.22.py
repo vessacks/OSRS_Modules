@@ -47,7 +47,7 @@ class Action:
     hitboxScreenCoords = [] #the location of the upper left corner of the hitbox
 
     #constructor
-    #note: 'mask' should be a mask = cv.imread('filelocation',0) type thing, ie a blacka nd white image read by cv.
+    #note: 'click_mask' should be a mask = cv.imread('filelocation',0) type thing, ie a blacka nd white image read by cv.
     #note: face_size should be a list of the approximate face sizes [x size, y size] where face is the area not covered by mask. assume it's roughly rectangular when getting size
     def __init__(self, hitbox_img_path, click_mask = [], face_size = None):
         self.hitboxImage = cv.imread(hitbox_img_path,cv.IMREAD_COLOR)
@@ -172,7 +172,7 @@ class Action:
 
 
      
-    def click(self,hitboxScreenCoords,speed=.5, wait= (.06 + abs(np.random.uniform(0,.02)))):
+    def click(self,hitboxScreenCoords,speed=.65, wait= (.12 + abs(np.random.uniform(0,.02)))):
         self.hitboxScreenCoords = hitboxScreenCoords
     
         #pick a locus to generate a point int
@@ -321,6 +321,154 @@ class Action:
         
         return self.screenClickPoint
 
+    def moveTo(self,hitboxScreenCoords,speed=.65, wait= (.12 + abs(np.random.uniform(0,.02)))):
+        self.hitboxScreenCoords = hitboxScreenCoords
+    
+        #pick a locus to generate a point int
+        locusPicker = np.random.randint(1,4)
+        if locusPicker == 1:
+            self.locusPick = self.locus1
+        if locusPicker == 2:
+            self.locusPick = self.locus2
+        if locusPicker == 3:
+            self.locusPick = self.locus3
+    
+        #generate the locus offset
+        self.x_locus_offset = np.random.randint(round(self.radius*-2), (round(self.radius*2)+1))
+        #account for the possible case of a negative y_locus_offset
+        if ((self.radius ** 2) - (self.x_locus_offset ** 2)) < 0:
+            self.y_locus_offset = np.sqrt(np.absolute((self.radius ** 2) - (self.x_locus_offset ** 2)))*-1
+        else:
+            self.y_locus_offset = np.sqrt((self.radius ** 2) - (self.x_locus_offset ** 2))
+        #calculate the point within the locus. these are hitbox coords
+        self.locusPoint = [self.locusPick[0] + self.x_locus_offset, self.locusPick[1] + self.y_locus_offset]
+
+        #randomly walk the point within the locus
+        self.x_pointWalk = np.random.normal(loc=0, scale=self.stdDev)
+        self.y_pointWalk = np.random.normal(loc=0, scale=self.stdDev)
+
+        #put this into the hitboxClickPoint
+        self.hitboxClickPoint = [self.locusPoint[0]+ self.x_pointWalk, self.locusPoint[1]+self.y_pointWalk]
+
+        #check we haven't wandered out of bounds, if so reroll until we're in bounds
+        while self.hitboxClickPoint[0] < 0 or self.hitboxClickPoint[0] > self.hitboxWidth or self.hitboxClickPoint[1] < 0 or self.hitboxClickPoint[1] > self.hitboxHeight:
+            #pick a locus to generate a point int
+            locusPicker = np.random.randint(1,4)
+            if locusPicker == 1:
+                self.locusPick = self.locus1
+            if locusPicker == 2:
+                self.locusPick = self.locus2
+            if locusPicker == 3:
+                self.locusPick = self.locus3
+        
+            #generate the locus offset
+            self.x_locus_offset = np.random.randint(round(self.radius*-2), (round(self.radius*2)+1))
+            #account for the possible case of a negative y_locus_offset
+            if ((self.radius ** 2) - (self.x_locus_offset ** 2)) < 0:
+                self.y_locus_offset = np.sqrt(np.absolute((self.radius ** 2) - (self.x_locus_offset ** 2)))*-1
+            else:
+                self.y_locus_offset = np.sqrt((self.radius ** 2) - (self.x_locus_offset ** 2))
+            #calculate the point within the locus. these are hitbox coords
+            self.locusPoint = [self.locusPick[0] + self.x_locus_offset, self.locusPick[1] + self.y_locus_offset]
+
+            #randomly walk the point within the locus
+            self.x_pointWalk = np.random.normal(loc=0, scale=self.stdDev)
+            self.y_pointWalk = np.random.normal(loc=0, scale=self.stdDev)
+
+            #put this into the hitboxClickPoint
+            self.hitboxClickPoint = [self.locusPoint[0]+ self.x_pointWalk, self.locusPoint[1]+self.y_pointWalk]
+
+        #check if we're doing a mask
+        if self.mask != []:
+            
+            #ok, we're doing a mask. We check to see if the clickpoint coords at the mask image are black. if so, we're going to reroll clickpoint.
+            #note: mask is a np array, and coords are expressed in [y,x] instead of [x,y]
+            #convert hitbox clickpoint from [x,y] to [y],[x]. also turn it into an integer.
+            self.hitboxClickPoint_x = round(self.hitboxClickPoint[0])
+            self.hitboxClickPoint_y = round(self.hitboxClickPoint[1])
+            
+            #check the color of the mask at hitboxClickPoint
+            self.hitboxClickPoint_mask_check = self.mask[self.hitboxClickPoint_y, self.hitboxClickPoint_x]
+            print('hitbox clickpoint = %s | mask_check = %s' % (self.hitboxClickPoint, self.hitboxClickPoint_mask_check))
+            
+            #while the color of the mask at point is black (==0), reroll
+            while self.hitboxClickPoint_mask_check == 0:
+                #pick a locus to generate a point int
+                locusPicker = np.random.randint(1,4)
+                if locusPicker == 1:
+                    self.locusPick = self.locus1
+                if locusPicker == 2:
+                    self.locusPick = self.locus2
+                if locusPicker == 3:
+                    self.locusPick = self.locus3
+    
+                #generate the locus offset
+                self.x_locus_offset = np.random.randint(round(self.radius*-2), (round(self.radius*2)+1))
+                #account for the possible case of a negative y_locus_offset
+                if ((self.radius ** 2) - (self.x_locus_offset ** 2)) < 0:
+                    self.y_locus_offset = np.sqrt(np.absolute((self.radius ** 2) - (self.x_locus_offset ** 2)))*-1
+                else:
+                    self.y_locus_offset = np.sqrt((self.radius ** 2) - (self.x_locus_offset ** 2))
+                #calculate the point within the locus. these are hitbox coords
+                self.locusPoint = [self.locusPick[0] + self.x_locus_offset, self.locusPick[1] + self.y_locus_offset]
+
+                #randomly walk the point within the locus
+                self.x_pointWalk = np.random.normal(loc=0, scale=self.stdDev)
+                self.y_pointWalk = np.random.normal(loc=0, scale=self.stdDev)
+
+                #put this into the hitboxClickPoint
+                self.hitboxClickPoint = [self.locusPoint[0]+ self.x_pointWalk, self.locusPoint[1]+self.y_pointWalk]
+
+                #check we haven't wandered out of bounds, if so reroll until we're in bounds
+                while self.hitboxClickPoint[0] < 0 or self.hitboxClickPoint[0] > self.hitboxWidth or self.hitboxClickPoint[1] < 0 or self.hitboxClickPoint[1] > self.hitboxHeight:
+                    #pick a locus to generate a point int
+                    locusPicker = np.random.randint(1,4)
+                    if locusPicker == 1:
+                        self.locusPick = self.locus1
+                    if locusPicker == 2:
+                        self.locusPick = self.locus2
+                    if locusPicker == 3:
+                        self.locusPick = self.locus3
+                
+                    #generate the locus offset
+                    self.x_locus_offset = np.random.randint(round(self.radius*-2), (round(self.radius*2)+1))
+                    #account for the possible case of a negative y_locus_offset
+                    if ((self.radius ** 2) - (self.x_locus_offset ** 2)) < 0:
+                        self.y_locus_offset = np.sqrt(np.absolute((self.radius ** 2) - (self.x_locus_offset ** 2)))*-1
+                    else:
+                        self.y_locus_offset = np.sqrt((self.radius ** 2) - (self.x_locus_offset ** 2))
+                    #calculate the point within the locus. these are hitbox coords
+                    self.locusPoint = [self.locusPick[0] + self.x_locus_offset, self.locusPick[1] + self.y_locus_offset]
+
+                    #randomly walk the point within the locus
+                    self.x_pointWalk = np.random.normal(loc=0, scale=self.stdDev)
+                    self.y_pointWalk = np.random.normal(loc=0, scale=self.stdDev)
+
+                    #put this into the hitboxClickPoint
+                    self.hitboxClickPoint = [self.locusPoint[0]+ self.x_pointWalk, self.locusPoint[1]+self.y_pointWalk]
+
+                #note: mask is a np array, and coords are expressed in [y,x] instead of [x,y]
+                #convert hitbox clickpoint from [x,y] to [y],[x]. also turn it into an integer.
+                self.hitboxClickPoint_x = round(self.hitboxClickPoint[0])
+                self.hitboxClickPoint_y = round(self.hitboxClickPoint[1])
+                
+                #check the color of the mask at hitboxClickPoint
+                self.hitboxClickPoint_mask_check = self.mask[self.hitboxClickPoint_y, self.hitboxClickPoint_x]
+                print('hitbox clickpoint = %s | mask_check = %s' % (self.hitboxClickPoint, self.hitboxClickPoint_mask_check ))
+
+
+        #put this into the screenClickPoint
+        self.screenClickPoint = [self.hitboxClickPoint[0] + self.hitboxScreenCoords[0], self.hitboxClickPoint[1] + self.hitboxScreenCoords[1]]
+
+        #move mouse to clickpoint
+        wind_mouse(pyautogui.position()[0], pyautogui.position()[1], self.screenClickPoint[0], self.screenClickPoint[1], speed=speed)
+        time.sleep(wait)
+        #pyautogui.click()
+        #time.sleep(wait)
+        #if np.random.random() < .3: #triggered 30% of the time #update: I think this is worse than nothing so I'm commenting it out
+        #    pyautogui.moveRel(np.random.randint(-5,6),np.random.randint(-5,6)) #I'm throwing this in here so that the mouse moves a little bit after clicking
+        
+        return self.screenClickPoint
 
     def dropClick(self, hitboxScreenCoords,speed =.5):
             self.hitboxScreenCoords = hitboxScreenCoords
