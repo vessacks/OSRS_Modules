@@ -13,7 +13,7 @@ import cv2 as cv
 
 def tick_dropper(odds=100):
     if np.random.randint(0,odds) == 1:
-        print('tick dropper!')
+        print('tick dropper! odds = 1 in %s' %odds)
         time.sleep(.6 + np.random.normal(0,.2))
     return
     
