@@ -15,7 +15,8 @@ def tick_dropper(odds=100):
     if np.random.randint(0,odds) == 1:
         print('tick dropper!')
         time.sleep(.6 + np.random.normal(0,.2))
-
+    return
+    
 
 
 class Action:
